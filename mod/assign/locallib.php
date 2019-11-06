@@ -7143,6 +7143,12 @@ class assign {
 
         $this->update_submission($submission, $userid, true, $instance->teamsubmission);
 
+        $complete = COMPLETION_INCOMPLETE;
+        if ($submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
+            $complete = COMPLETION_COMPLETE;
+        }
+        $completion = new completion_info($this->get_course());
+
         if ($instance->teamsubmission && !$instance->requireallteammemberssubmit) {
             $team = $this->get_submission_group_members($submission->groupid, true);
 
@@ -7150,6 +7156,9 @@ class assign {
                 if ($member->id != $userid) {
                     $membersubmission = clone($submission);
                     $this->update_submission($membersubmission, $member->id, true, $instance->teamsubmission);
+                }
+                if ($completion->is_enabled($this->get_course_module()) && $instance->completionsubmit) {
+                    $completion->update_state($this->get_course_module(), $complete, $member->id);
                 }
             }
         }
@@ -7159,11 +7168,6 @@ class assign {
             \mod_assign\event\statement_accepted::create_from_submission($this, $submission)->trigger();
         }
 
-        $complete = COMPLETION_INCOMPLETE;
-        if ($submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
-            $complete = COMPLETION_COMPLETE;
-        }
-        $completion = new completion_info($this->get_course());
         if ($completion->is_enabled($this->get_course_module()) && $instance->completionsubmit) {
             $completion->update_state($this->get_course_module(), $complete, $userid);
         }
