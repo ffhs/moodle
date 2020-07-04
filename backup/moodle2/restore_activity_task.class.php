@@ -100,6 +100,10 @@ abstract class restore_activity_task extends restore_task {
         return $this->moduleid;
     }
 
+    public function get_oldmoduleid() {
+        return $this->oldmoduleid;
+    }
+
     public function get_old_moduleversion() {
         return $this->oldmoduleversion;
     }
