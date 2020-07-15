@@ -3032,6 +3032,11 @@ function calendar_get_icalendar($url) {
 
     require_once($CFG->libdir . '/filelib.php');
 
+    // Checks if the given URL is an exported Moodle calendar.
+    if (strpos($url, $CFG->wwwroot. '/calendar/export_execute.php') !== false) {
+        throw new \moodle_exception('curlsecurityurlblocked', 'admin');
+    }
+
     $curl = new \curl();
     $curl->setopt(array('CURLOPT_FOLLOWLOCATION' => 1, 'CURLOPT_MAXREDIRS' => 5));
     $calendar = $curl->get($url);
