@@ -90,6 +90,7 @@ $string['errorinvalidbysecond'] = 'Valid values for the BYSECOND rule are 0 to 5
 $string['errorinvaliddate'] = 'Invalid date';
 $string['errorinvalidminutes'] = 'Specify duration in minutes by giving a number between 1 and 999.';
 $string['errorinvalidrepeats'] = 'Specify the number of events by giving a number between 1 and 99.';
+$string['errorinvalidurl'] = 'The given URL is not allowed because it is a Moodle export calendar URL.';
 $string['errorinvalidicalurl'] = 'The given iCal URL is invalid.';
 $string['errormustbeusedwithotherbyrule'] = 'The BYSETPOS rule must only be used in conjunction with another BYxxx rule part.';
 $string['errornodescription'] = 'Description is required';
