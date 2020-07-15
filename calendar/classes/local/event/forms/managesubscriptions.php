@@ -100,7 +100,7 @@ class managesubscriptions extends \moodleform {
      * @return array
      */
     public function validation($data, $files) {
-        global $USER;
+        global $CFG, $USER;
 
         $errors = parent::validation($data, $files);
 
@@ -130,7 +130,18 @@ class managesubscriptions extends \moodleform {
             // Clean input calendar url.
             $url = clean_param($data['url'], PARAM_URL);
             if (empty($url) || ($url !== $data['url'])) {
-                $errors['url']  = get_string('invalidurl', 'error');
+                $errors['url'] = get_string('invalidurl', 'error');
+            }
+            // Check calendar URL against Moodle HTTP security settings, domain validation and itself.
+            $curlhelper = new \core\files\curl_security_helper;
+            if ($curlhelper->url_is_blocked($url)) {
+                $errors['url'] = $curlhelper->get_blocked_url_string();
+            }
+            if (\core\ip_utils::is_domain_name($url)) {
+                $errors['url'] = get_string('invalidurl', 'error');
+            }
+            if (strpos($url, $CFG->wwwroot. '/calendar/export_execute.php') !== false) {
+                $errors['url'] = get_string('errorinvalidurl', 'calendar');
             }
         } else {
             // Shouldn't happen.
