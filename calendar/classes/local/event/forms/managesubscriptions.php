@@ -132,7 +132,7 @@ class managesubscriptions extends \moodleform {
             try {
                 calendar_get_icalendar($url);
             } catch (\moodle_exception $e) {
-                $errors['url']  = get_string('errorinvalidicalurl', 'calendar');
+                $errors['url'] = get_string($e->errorcode, $e->module);
             }
         } else {
             // Shouldn't happen.
