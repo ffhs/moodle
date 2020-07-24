@@ -46,7 +46,7 @@ class progress {
      *         or there are no activities that support completion.
      */
     public static function get_course_progress_percentage($course, $userid = 0) {
-        global $USER;
+        global $CFG, $USER;
 
         // Make sure we continue with a valid userid.
         if (empty($userid)) {
@@ -71,6 +71,26 @@ class progress {
 
         // Get the number of modules that support completion.
         $modules = $completion->get_activities();
+
+        // Filter modules which are not visible or a user can't see due to grouping constraints.
+        $filteredmodules = [];
+        foreach ($modules as $module) {
+            $context = \context_module::instance($module->id);
+            $canviewhidden = has_capability('moodle/course:viewhiddenactivities', $context);
+
+            // This module is hidden and current user has no capability.
+            if (!$module->visible && !$canviewhidden) {
+                continue;
+            }
+
+            // This module is visible but current user can't access it by restrictions.
+            if (!$module->available && !empty($CFG->enableavailability)) {
+                continue;
+            }
+
+            $filteredmodules[] = $module;
+        }
+        $modules = $filteredmodules;
         $count = count($modules);
         if (!$count) {
             return null;
