@@ -949,6 +949,7 @@ $string['groupmemberssee'] = 'See group members';
 $string['groupmembersselected'] = 'Members of selected group';
 $string['groupmode'] = 'Group mode';
 $string['groupmodeforce'] = 'Force group mode';
+$string['grouphidepicture'] = 'Hide group picture';
 $string['groupmy'] = 'My group';
 $string['groupnonmembers'] = 'People not in a group';
 $string['groupnotamember'] = 'Sorry, you are not a member of that group';

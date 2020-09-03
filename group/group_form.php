@@ -79,6 +79,7 @@ class group_form extends moodleform {
 
         $options = array(get_string('no'), get_string('yes'));
         $mform->addElement('select', 'hidepicture', get_string('hidepicture'), $options);
+        $mform->setDefault('hidepicture', get_config('moodlecourse', 'grouphidepicture'));
 
         $mform->addElement('filepicker', 'imagefile', get_string('newpicture', 'group'));
         $mform->addHelpButton('imagefile', 'newpicture', 'group');
