@@ -36,22 +36,12 @@
         "content": "<h3>Adrian</h3><div class="no-overflow"><p dir="ltr" style="text-align:left;">He's from Brig</p>"
     }
 }}
-<div id="block-glossaryrandom-{{uniqid}}" data-region="randomglossaryblock" data-blockinstanceid="{{blockinstanceid}}" data-reloadtime="{{reloadtime}}">
+<div data-region="randomglossaryblock" data-blockinstanceid="{{blockinstanceid}}" data-reloadtime="{{reloadtime}}">
     {{> block_glossary_random/view}}
     {{> block_glossary_random/refreshbutton}}
 </div>
 {{#js}}
-require(
-[
-    'jquery',
-    'block_glossary_random/main',
-],
-function(
-    $,
-    Main
-) {
-    var root = $('#block-glossaryrandom-{{uniqid}}');
-
-    Main.init(root);
+require(['block_glossary_random/main'], function(Main) {
+    Main.init("[data-blockinstanceid='{{blockinstanceid}}']");
 });
 {{/js}}
