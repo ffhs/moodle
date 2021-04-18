@@ -23,90 +23,69 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(
-    [
-        'block_glossary_random/repository',
-        'core/templates',
-    ],
-    function(
-        Repository,
-        Templates
-    ) {
-        var GLOSSARYENTRY = '[data-region="randomglossaryentry-content"]';
-        var REFRESHBUTTON = '[id="refresh_glossary_button"]';
+import {getEntry} from './repository';
+import Templates from 'core/templates';
+import {exception as displayException} from 'core/notification';
 
-        /**
-         * Get entry from backend.
-         *
-         * @method getEntry
-         * @param {Number} blockinstanceid Glossary block instance id
-         * @return {promise} Resolved with an array of a entry
-         */
-        var getEntry = function(blockinstanceid) {
-            return Repository.getEntry(blockinstanceid);
-        };
+const selectors = {
+    glossaryEntry: '[data-region="randomglossaryentry-content"]',
+    refreshButton: '[id="refresh_glossary_button"]',
+};
 
-        /**
-         * Render the block content.
-         *
-         * @method renderEntry
-         * @param {array} entry array containing entry of glossary item.
-         * @return {Promise} Resolved with HTML and JS strings
-         */
-        var renderEntry = function(entry) {
-            return Templates.renderForPromise('block_glossary_random/view', entry);
-        };
+/**
+ * Render the block content.
+ *
+ * @method renderEntry
+ * @param {array} entry array containing entry of glossary item.
+ * @return {Promise} Resolved with HTML and JS strings
+ */
+const renderEntry = entry => Templates.renderForPromise('block_glossary_random/view', entry);
 
-        /**
-         * Reloads the content of the block.
-         *
-         * @method reloadContent
-         * @param {DOMElement} root object of the element to be replaced
-         * @returns {Promise}
-         */
-        var reloadContent = function(root) {
-            var content = root.querySelector(GLOSSARYENTRY);
+/**
+ * Reloads the content of the block.
+ *
+ * @method reloadContent
+ * @param {DOMElement} root object of the element to be replaced
+ * @returns {Promise}
+ */
+const reloadContent = function(root) {
+    const content = root.querySelector(selectors.glossaryEntry);
 
-            var instanceId = root.dataset.blockinstanceid || null;
-            return getEntry(instanceId)
-                .then(entry => renderEntry(entry.data))
-                .then(({html, js}) => Templates.replaceNodeContents(content, html, js))
-                .catch(Notification.exception);
-        };
+    const instanceId = root.dataset.blockinstanceid || null;
+    return getEntry(instanceId)
+        .then(entry => renderEntry(entry.data))
+        .then(({html, js}) => Templates.replaceNodeContents(content, html, js))
+        .catch(displayException);
+};
 
-        /**
-         * Event listener for the refresh button.
-         *
-         * @param {object} root The root element for the overview block
-         */
-        var refreshButton = function(root) {
-            root.addEventListener('click', e => {
-                if (e.target.closest(REFRESHBUTTON)) {
-                    e.preventDefault();
-                    reloadContent(root);
-                }
-            });
-        };
-
-        /**
-         * Get and show the glossary entry into the block.
-         *
-         * @param {String} rootSelector A reference to locate the root element.
-         */
-        var init = function(rootSelector) {
-            var root = document.querySelector(rootSelector);
-
-            // Init event click listener.
-            refreshButton(root);
-
-            var timerInterval = parseInt(root.dataset.reloadtime);
-            if (timerInterval) {
-                // Start the periodic interval timer.
-                setInterval(() => reloadContent(root), timerInterval);
-            }
-        };
-
-        return {
-            init: init
-        };
+/**
+ * Event listener for the refresh button.
+ *
+ * @param {object} root The root element for the overview block
+ */
+const initEventListeners = root => {
+    root.addEventListener('click', e => {
+        if (e.target.closest(selectors.refreshButton)) {
+            e.preventDefault();
+            reloadContent(root);
+        }
     });
+};
+
+/**
+ * Get and show the glossary entry into the block.
+ *
+ * @param {String} rootSelector A reference to locate the root element.
+ */
+export const init = rootSelector => {
+    const root = document.querySelector(rootSelector);
+
+    // Init event click listener.
+    initEventListeners(root);
+
+    const timerInterval = parseInt(root.dataset.reloadtime);
+    if (timerInterval) {
+        // Start the periodic interval timer.
+        setInterval(() => reloadContent(root), timerInterval);
+    }
+};
