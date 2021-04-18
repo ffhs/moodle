@@ -21,27 +21,18 @@
  * @copyright  2020 Adrian Perez, Fernfachhochschule Schweiz (FFHS) <adrian.perez@ffhs.ch>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['core/ajax'], function(Ajax) {
+import {call as fetchMany} from 'core/ajax';
 
-    /**
-     * Get the entry to display of a glossary.
-     *
-     * @method getEntry
-     * @param {int} blockinstanceid Random glossary block instance id
-     * @return {promise} Resolved with an array of a entry
-     */
-    var getEntry = function(blockinstanceid) {
-        var args = {};
-        if (typeof blockinstanceid !== 'undefined') {
-            args.blockinstanceid = blockinstanceid;
-        }
-        var request = {
-            methodname: 'block_glossary_random_get_entry',
-            args: args
-        };
-        return Ajax.call([request])[0];
-    };
-    return {
-        getEntry: getEntry
-    };
-});
+/**
+ * Get the entry to display of a glossary.
+ *
+ * @method getEntry
+ * @param {Number} blockinstanceid Random glossary block instance id
+ * @return {promise} Resolved with an array of a entry
+ */
+export const getEntry = blockinstanceid => fetchMany([{
+    methodname: 'block_glossary_random_get_entry',
+    args: {
+        blockinstanceid,
+    },
+}])[0];
