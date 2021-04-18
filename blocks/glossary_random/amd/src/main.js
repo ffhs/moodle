@@ -25,29 +25,21 @@
 
 define(
     [
-        'jquery',
         'block_glossary_random/repository',
         'core/templates',
-        'core/custom_interaction_events'
     ],
     function(
-        $,
         Repository,
-        Templates,
-        CustomEvents
+        Templates
     ) {
         var GLOSSARYENTRY = '[data-region="randomglossaryentry-content"]';
         var REFRESHBUTTON = '[id="refresh_glossary_button"]';
-
-        var content = '';
-        var timer = '';
-        var blockinstanceid = '';
 
         /**
          * Get entry from backend.
          *
          * @method getEntry
-         * @param {int} blockinstanceid Glossary block instance id
+         * @param {Number} blockinstanceid Glossary block instance id
          * @return {promise} Resolved with an array of a entry
          */
         var getEntry = function(blockinstanceid) {
@@ -58,27 +50,28 @@ define(
          * Render the block content.
          *
          * @method renderEntry
-         * @param {array} array containing entry of glossary item.
-         * @return {promise} Resolved with HTML and JS strings
+         * @param {array} entry array containing entry of glossary item.
+         * @return {Promise} Resolved with HTML and JS strings
          */
         var renderEntry = function(entry) {
-            return Templates.render('block_glossary_random/view', entry);
+            return Templates.renderForPromise('block_glossary_random/view', entry);
         };
 
         /**
-         * Relodas the content of the block.
+         * Reloads the content of the block.
          *
          * @method reloadContent
-         * @param {content} object of the element to be replaced
+         * @param {DOMElement} root object of the element to be replaced
+         * @returns {Promise}
          */
-        var reloadContent = function(content) {
-            return getEntry(blockinstanceid)
-                .then(function(entry) {
-                    return renderEntry(entry.data);
-                }).then(function(html, js) {
-                    return Templates.replaceNodeContents(content, html, js);
-                }).catch(Notification.exception);
+        var reloadContent = function(root) {
+            var content = root.querySelector(GLOSSARYENTRY);
 
+            var instanceId = root.dataset.blockinstanceid || null;
+            return getEntry(instanceId)
+                .then(entry => renderEntry(entry.data))
+                .then(({html, js}) => Templates.replaceNodeContents(content, html, js))
+                .catch(Notification.exception);
         };
 
         /**
@@ -87,36 +80,29 @@ define(
          * @param {object} root The root element for the overview block
          */
         var refreshButton = function(root) {
-            CustomEvents.define(root, [
-                CustomEvents.events.activate
-            ]);
-
-            root.on(CustomEvents.events.activate, REFRESHBUTTON, function(e, data) {
-                reloadContent(content);
-                data.originalEvent.preventDefault();
+            root.addEventListener('click', e => {
+                if (e.target.closest(REFRESHBUTTON)) {
+                    e.preventDefault();
+                    reloadContent(root);
+                }
             });
         };
 
         /**
          * Get and show the glossary entry into the block.
          *
-         * @param {object} root The root element for the items block.
+         * @param {String} rootSelector A reference to locate the root element.
          */
-        var init = function(root) {
-            root = $(root);
-
-            content = root.find(GLOSSARYENTRY);
-            timer = root.attr('data-reloadtime') || null;
-            blockinstanceid = root.attr('data-blockinstanceid') || null;
+        var init = function(rootSelector) {
+            var root = document.querySelector(rootSelector);
 
             // Init event click listener.
             refreshButton(root);
 
-            // Run periodical timer if set.
-            if (timer > 0) {
-                setInterval(() => {
-                    reloadContent(content);
-                }, timer);
+            var timerInterval = parseInt(root.dataset.reloadtime);
+            if (timerInterval) {
+                // Start the periodic interval timer.
+                setInterval(() => reloadContent(root), timerInterval);
             }
         };
 
