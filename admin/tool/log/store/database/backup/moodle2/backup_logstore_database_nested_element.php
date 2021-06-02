@@ -55,6 +55,29 @@ class backup_logstore_database_nested_element extends backup_nested_element {
     }
 
     /**
+     * Destroy existing logstore database connections and all circular references.
+     */
+    public function destroy() {
+        global $DB;
+
+        $extdbconfig = $this->get_source_db()->export_dbconfig();
+        if (!$extdbconfig->dbhost || !$extdbconfig->dbname) {
+            return;
+        }
+
+        $dbconfig = $DB->export_dbconfig();
+        if ($dbconfig->dbhost === $extdbconfig->dbhost || $dbconfig->dbname === $extdbconfig->dbname) {
+            return;
+        }
+
+        if ($this->get_source_db() !== null) {
+            $this->sourcedb->dispose();
+
+            parent::destroy(); // Ensure every element's destroy() in the structure is recursively called.
+        }
+    }
+
+    /**
      * For sql or table datasources, this will iterate over the "external" DB connection
      * stored in this class instead of the default $DB. All other cases use the parent default.
      * @param object $processor the processor
